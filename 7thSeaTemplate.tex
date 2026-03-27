@@ -1,0 +1,530 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 7TH SEA RPG TEMPLATE
+% A template for creating 7th Sea RPG sourcebooks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%% BOOK TITLE %%%%
+\newcommand{\bookTitleFooter}{7th Sea Template}
+
+%%%% DOCUMENT CLASS %%%%
+\documentclass[10pt,a4paper,twoside,twocolumn,openany]{book}
+
+%%%% ESSENTIAL PACKAGES %%%%
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{expl3}
+\usepackage{xparse}
+\usepackage{etoolbox}
+\usepackage{xstring}
+\usepackage{microtype}
+
+%%%% FONT CONFIGURATION %%%%
+\usepackage{palatino}
+\usepackage{avant}
+
+%%%% COLOR %%%%
+\usepackage[table]{xcolor}
+\definecolor{baseColor}{HTML}{2E55A6}
+\definecolor{colorText}{HTML}{2E55A6}
+\definecolor{theah}{HTML}{2E55A6}
+\definecolor{khitai}{HTML}{39622E}
+\definecolor{1knations}{HTML}{A00909}
+\definecolor{newWorld}{HTML}{C8A000}
+\definecolor{ifri}{HTML}{C95000}
+\definecolor{crescentEmpire}{HTML}{8F431B}
+\definecolor{citiesOfWonder}{HTML}{782FA9}
+\definecolor{pirateNations}{HTML}{540304}
+\definecolor{priceOfArrogance}{HTML}{285E79}
+\colorlet{specialNotesTextColor}{white}
+
+%%%% TABLE PACKAGES %%%%
+% tabularray replaces tabularx+colortbl — no TeX Live 2025 issues
+\usepackage{tabularray}
+\UseTblrLibrary{varwidth}
+
+%%%% GRAPHICS & BOXES %%%%
+\usepackage{tikz}
+\usepackage[most]{tcolorbox}
+\tcbset{sharp corners, boxrule=0pt, frame hidden}
+\usepackage[framemethod=TikZ]{mdframed}
+
+%%%% PAGE LAYOUT %%%%
+\ExplSyntaxOn
+\dim_new:N \c_my_top_margin_dim
+\dim_set:Nn \c_my_top_margin_dim { 0.7in }
+\dim_new:N \c_my_bottom_margin_dim
+\dim_set:Nn \c_my_bottom_margin_dim { 0.8in }
+\dim_new:N \c_my_side_margin_dim
+\dim_set:Nn \c_my_side_margin_dim { 0.7in }
+\dim_new:N \c_my_column_space_dim
+\dim_set:Nn \c_my_column_space_dim { 0.3in }
+\tl_new:N \l_theme_tl
+\tl_set:Nn \l_theme_tl {theah}
+\newlength{\mytopmargin}
+\newlength{\mybottommargin}
+\newlength{\mysidemargin}
+\newlength{\mycolumnspace}
+\setlength{\mytopmargin}{\c_my_top_margin_dim}
+\setlength{\mybottommargin}{\c_my_bottom_margin_dim}
+\setlength{\mysidemargin}{\c_my_side_margin_dim}
+\setlength{\mycolumnspace}{\c_my_column_space_dim}
+\ExplSyntaxOff
+
+\usepackage[a4paper,
+lmargin=\mysidemargin, rmargin=\mysidemargin,
+tmargin=\mytopmargin,  bmargin=\mybottommargin
+]{geometry}
+\setlength{\columnsep}{\mycolumnspace}
+
+\usepackage{eso-pic}
+\usepackage{graphicx}
+\usepackage{ifthen}
+
+\AddToShipoutPictureBG{%
+	\ifthenelse{\isodd{\value{page}}}{%
+		\includegraphics[width=\paperwidth,height=\paperheight]{img/page-backgrounds/paper.jpg}%
+	}{%
+		\includegraphics[width=\paperwidth,height=\paperheight]{img/page-backgrounds/paper2.jpg}%
+	}%
+}
+
+%%%% THEME SYSTEM %%%%
+\ExplSyntaxOn
+\cs_new:Npn \set_theme_variables:n #1 {
+	\colorlet{baseColor}{#1}
+	\colorlet{colorText}{#1}
+	\tl_set:Nn \l_theme_tl {#1}
+	\str_case:nnF {#1} {
+		{newWorld} { \colorlet{specialNotesTextColor}{black} }
+	}
+	{ \colorlet{specialNotesTextColor}{white} }
+}
+\cs_new_eq:NN \SetThemeVariables \set_theme_variables:n
+\cs_new:Npn \gettheme { \tl_use:N \l_theme_tl }
+\ExplSyntaxOff
+
+\newcommand{\setTheme}[1]{%
+	\IfStrEqCase{#1}{%
+		{theah}            {\SetThemeVariables{theah}}%
+		{khitai}           {\SetThemeVariables{khitai}}%
+		{1knations}        {\SetThemeVariables{1knations}}%
+		{newWorld}         {\SetThemeVariables{newWorld}}%
+		{ifri}             {\SetThemeVariables{ifri}}%
+		{crescentEmpire}   {\SetThemeVariables{crescentEmpire}}%
+		{citiesOfWonder}   {\SetThemeVariables{citiesOfWonder}}%
+		{pirateNations}    {\SetThemeVariables{pirateNations}}%
+		{priceOfArrogance} {\SetThemeVariables{priceOfArrogance}}%
+	}%
+}
+
+%%%% HEADERS & FOOTERS %%%%
+\usepackage{fancyhdr}
+\usepackage{changepage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+
+\fancyfoot[LE]{%
+	\raisebox{-1em}[0pt][0pt]{%
+		\hspace{3em}\textcolor{baseColor}{\small \bookTitleFooter}%
+	}%
+}
+\fancyfoot[RO]{%
+	\raisebox{-1em}[0pt][0pt]{%
+		\textcolor{baseColor}{\small \leftmark}\hspace{3em}%
+	}%
+}
+\fancyfoot[C]{%
+	\begin{tikzpicture}[remember picture,overlay]
+		\node[inner sep=0pt,anchor=south,yshift=0.42in] at (current page.south) {\thepage};
+		\node[inner sep=0pt,anchor=south] at (current page.south) {%
+			\includegraphics[width=\paperwidth]{img/\gettheme/footerscroll}%
+		};
+	\end{tikzpicture}%
+}
+
+\fancypagestyle{plain}{%
+	\renewcommand{\headrulewidth}{0pt}
+	\fancyhf{}
+	\fancyfoot[LE]{%
+		\raisebox{-1em}[0pt][0pt]{%
+			\hspace{3em}\textcolor{baseColor}{\small \bookTitleFooter}%
+		}%
+	}
+	\fancyfoot[RO]{%
+		\raisebox{-1em}[0pt][0pt]{%
+			\textcolor{baseColor}{\small \leftmark}\hspace{3em}%
+		}%
+	}
+	\fancyfoot[C]{%
+		\begin{tikzpicture}[remember picture,overlay]
+			\node[inner sep=0pt,anchor=south,yshift=0.42in] at (current page.south) {\thepage};
+			\node[inner sep=0pt,anchor=south] at (current page.south) {%
+				\includegraphics[width=\paperwidth]{img/\gettheme/footerscroll}%
+			};
+		\end{tikzpicture}%
+	}
+}
+
+%%%% SECTION FORMATTING %%%%
+\usepackage{titlesec}
+\usepackage{titletoc}
+
+\pretocmd{\chapter}{\cleardoublepage}{}{}
+
+\titleformat{\chapter}[display]
+{\normalfont\Huge\filcenter}{}{0pt}
+{\vspace*{0.01\textheight}\MakeUppercase}
+[\vskip-12pt{\color{baseColor}\rule{\linewidth}{1pt}}]
+
+\titleformat{\section}[block]{\normalfont\LARGE}{}{0pt}{\MakeUppercase}
+\titleformat{\subsection}[block]{\normalfont\Large}{}{0pt}{\MakeUppercase}
+\titleformat{\subsubsection}[block]{\normalfont\large}{}{0pt}{\MakeUppercase}
+
+%%%% TABLE OF CONTENTS %%%%
+\makeatletter
+\renewcommand\tableofcontents{%
+	\chapter*{\centering\normalfont\Huge\contentsname}
+	\@starttoc{toc}%
+}
+\makeatother
+
+\titlecontents{part}[0pt]
+{\addvspace{.06in}\large\bfseries\rmfamily}
+{\partname\ \thecontentslabel:~}{}
+{\hfill\contentspage}
+[\addvspace{-.03in}\titleline{\color{baseColor}\titlerule[1pt]}\addvspace{.05in}]
+
+\titlecontents{chapter}[0pt]
+{\addvspace{.04in}\large\scshape\rmfamily\color{baseColor}}
+{}{}{\hfill\contentspage}
+[\addvspace{-.03in}\titleline{\color{black}\titlerule[0.5pt]}\addvspace{.05in}]
+
+\titlecontents{section}[0pt]{\normalsize\scshape\rmfamily}
+{}{}{\titlerule*{.}\contentspage}
+\titlecontents{subsection}[10pt]{\normalsize\scshape\rmfamily}
+{}{}{\titlerule*{.}\contentspage}
+\titlecontents{subsubsection}[15pt]{\normalsize\scshape\rmfamily}
+{}{}{\titlerule*{.}\contentspage}
+
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{-1}
+
+%%%% NICETABLE %%%%
+% Uses tabularray — no colortbl/rowcolors, no TeX Live 2025 issues.
+% Usage:
+%   \begin{NiceTable}{colspec}                        — plain table
+	%   \begin{NiceTable}[My Header]{colspec}             — with header
+		%   \begin{NiceTable}[My Header][blue!20]{colspec}    — header + row color
+			
+			\NewDocumentEnvironment{NiceTable}{o O{white} m}{%
+				\par\vspace{9pt plus 3pt minus 3pt}\noindent
+				\IfValueT{#1}{{\large\bfseries\sffamily #1\nopagebreak}\par\vspace{5pt plus 2pt minus 2pt}\noindent}%
+				\small\sffamily
+				\begin{tblr}{
+						colspec={#3},
+						row{odd}={#2},
+						row{even}={},
+						rowsep=3pt,
+						row{1}={abovesep=8pt, belowsep=8pt},
+					}%
+				}{%
+				\end{tblr}%
+				\vspace{9pt plus 3pt minus 3pt}%
+			}
+			
+			%%%% CITATION %%%%
+			\NewDocumentEnvironment{Citation}{o m}{%
+				\par\vspace{1em}
+				\begin{center}\itshape ``#2''\end{center}
+				\IfValueT{#1}{\par\noindent\hfill{\itshape\textemdash\ #1}\par}
+				\vspace{0.5em}
+			}{}
+			
+			%%%% LAYOUT HELPERS %%%%
+			\usepackage{float}
+			\usepackage{framed}
+			\newfloat{custombox}{tp}{lob}
+			\floatname{custombox}{Box}
+			
+			\NewDocumentCommand{\placetopbox}{}{%
+				\begin{tikzpicture}[remember picture, overlay]
+					\checkoddpage
+					\ifoddpage
+					\fill[baseColor]
+					([xshift=\columnwidth+\mysidemargin+\mycolumnspace]current page.north west)
+					rectangle ++(\columnwidth,-\mytopmargin);
+					\else
+					\fill[baseColor]
+					([xshift=-\columnwidth-\mysidemargin-\mycolumnspace]current page.north east)
+					rectangle ++(-\columnwidth,-\mytopmargin);
+					\fi
+				\end{tikzpicture}%
+			}
+			
+			%%%% COLORED BOXES %%%%
+			\newtcolorbox{bgbox}{
+				colback=baseColor, colframe=baseColor,
+				width=\columnwidth, coltext=specialNotesTextColor,
+				left=5pt, right=5pt, top=2pt, bottom=2pt
+			}
+			\newcommand{\BGHeader}[1]{%
+				\begin{bgbox}\noindent\large\textsc{\MakeUppercase{#1}}\end{bgbox}%
+			}
+			\newcommand{\Quirk}[2]{\medskip\noindent\textsc{#1}: \textit{#2}}
+			
+			\NewDocumentEnvironment{ColorBox}{m}{%
+				\bigskip\noindent
+				\begin{tcolorbox}[
+					enhanced, colback=baseColor!10, colframe=baseColor,
+					coltext=black, boxrule=0.4pt, sharp corners,
+					left=8pt, right=8pt, top=6pt, bottom=6pt,
+					frame code={
+						\draw[color=baseColor, line width=0.4pt]
+						(frame.south west) rectangle (frame.north east);
+					}]
+					#1
+				\end{tcolorbox}
+			}{}
+			
+			%%%% SPECIAL NOTES %%%%
+			\newsavebox{\specialnotesbox}
+			\newsavebox{\overlaytempbox}
+			\newlength{\specialnotesheight}
+			\newlength{\specialnotestotalheight}
+			\newlength{\specialnotesxshift}
+			\setlength{\specialnotesxshift}{-9pt}
+			
+			\newcommand{\drawcoverimage}[4]{%
+				\savebox{\overlaytempbox}{\includegraphics[width=#2]{#1}}%
+				\ifdim\ht\overlaytempbox<#3%
+				\savebox{\overlaytempbox}{\includegraphics[height=#3]{#1}}%
+				\fi
+				\node[#4]{\usebox{\overlaytempbox}};%
+			}
+			
+			\NewDocumentEnvironment{SpecialNotes}{O{} m +b}{%
+				\edef\overlaypath{#1}%
+				\savebox{\specialnotesbox}{%
+					\begin{minipage}{\columnwidth}
+						\begin{mdframed}[
+							linewidth=0pt,
+							innerleftmargin=5pt, innerrightmargin=0pt,
+							innertopmargin=6pt,  innerbottommargin=6pt,
+							backgroundcolor=none, skipabove=0pt, skipbelow=0pt]
+							\begin{minipage}{\dimexpr\columnwidth-32pt\relax}
+								\begin{center}
+									{\color{specialNotesTextColor}\Large\MakeUppercase{#2}\par}
+								\end{center}
+								\normalsize
+								\begin{center}
+									\begin{tikzpicture}
+										\draw[specialNotesTextColor, dotted, line width=6pt,
+										dash pattern=on 1pt off 2pt]
+										(0,0) -- (\columnwidth,0);
+									\end{tikzpicture}
+								\end{center}
+								\setlength{\parskip}{1em}
+								\color{specialNotesTextColor}
+								#3
+								\vspace{2em}
+							\end{minipage}
+						\end{mdframed}
+					\end{minipage}%
+				}%
+				\setlength{\specialnotesheight}{\dimexpr\ht\specialnotesbox+\dp\specialnotesbox\relax}%
+				\setlength{\specialnotestotalheight}{\dimexpr\mytopmargin+\specialnotesheight\relax}%
+				\begin{tikzpicture}[remember picture, overlay]
+					\node[inner sep=0pt, outer sep=0pt, anchor=north west]
+					(specialnotesanchor) at (0,0) {};
+				\end{tikzpicture}
+				\begin{tikzpicture}[remember picture, overlay]
+					\fill[baseColor]
+					([xshift=\specialnotesxshift]specialnotesanchor.north west |- current page.north)
+					rectangle ++(\columnwidth,-\specialnotestotalheight);
+					\ifx\overlaypath\empty\else
+					\begin{scope}
+						\clip
+						([xshift=\specialnotesxshift]specialnotesanchor.north west |- current page.north)
+						rectangle ++(\columnwidth,-\specialnotestotalheight);
+						\drawcoverimage{\overlaypath}{\columnwidth}{\specialnotestotalheight}{%
+							opacity=0.15, inner sep=0pt, outer sep=0pt, anchor=north,
+							at={([xshift=\specialnotesxshift+0.5\columnwidth]
+								specialnotesanchor.north west |- current page.north)}%
+						}
+					\end{scope}
+					\fi
+				\end{tikzpicture}
+				\noindent\usebox{\specialnotesbox}\par
+				\vspace{2\baselineskip}
+			}{}
+			
+			%%%% MISC %%%%
+			\usepackage{lipsum}
+			\usepackage[hidelinks]{hyperref}
+
+%%%% DOCUMENT METADATA %%%%
+\title{7th Sea \\
+	\Huge Template}
+\author{}
+\date{}
+
+\begin{document}
+
+    %\setTheme{THEME}  % Here set theme for the whole book: khitai, 1knations, newWorld, ifri, crescentEmpire, citiesOfWonder, pirateNations, priceOfArrogance, theah (default)
+    \maketitle
+    
+    \clearpage              % Use this two (or just second) lines to supress
+    \thispagestyle{empty}   % footer from appearing on blank pages
+    \tableofcontents
+
+    \onecolumn
+    \begin{center}
+	  \includegraphics[height=\textheight, keepaspectratio=true]{img/\gettheme/overlay}
+    \end{center}
+    
+    \twocolumn
+    \chapter{Overview}
+    \markboth{Overview}{} % Use this to get original capitalization in footer.
+    
+    This template was made to let You create beautiful yet consistent 7th Sea books,
+    a tabletop roleplaying game of swashbuckling
+    and intrigue, exploration and adventure, taking place on the
+    ­continent of Théah, a land of magic and mystery inspired by
+    our own Europe.\\
+		
+	
+    \section{Section}
+    Sections break up chapters into large groups of associated text.
+    
+    \subsection{Subsection}
+    Subsections further break down the information for the reader.
+    
+    \subsubsection{Subsubsection}
+    Subsubsections are the furthest division of text that still have a block header. Below this level, headers are displayed inline.
+	
+    \section{Tables}
+    
+    \subsection{Basic Table Example}
+    
+    \begin{NiceTable}{X X X}
+    	\textbf{Ship Type} & \textbf{Crew Size} & \textbf{Cargo Capacity} \\
+    	\hline
+    	Sloop & 20 & Small \\
+    	Galleon & 100 & Large \\
+    	Frigate & 60 & Medium \\
+    	Merchant Ship & 40 & Very Large
+    \end{NiceTable}
+    
+    \subsection{Table with color Header and Centered Columns}
+    
+    \begin{NiceTable}[Important campaign characters]{X[m,c] X[m,c] X[m,c]}
+    	\SetRow{bg=baseColor, fg=specialNotesTextColor, font=\bfseries} Character & Nation & Role \\
+    	Captain Reis & Vodacce & Villain \\
+    	Lady MacKenzie & Highland Marches & Hero \\
+    	Don Alvarez & Castille & Sidekick \\
+    	Maria del Torres & Castille & Hero \\
+    \end{NiceTable}
+    
+    \subsection{Table with color Header and alternating rows}
+    
+    \begin{NiceTable}[Dueling Maneuvers][baseColor!30]{X[m] Q[m] X[m]}
+    	\SetRow{bg=baseColor, fg=specialNotesTextColor, font=\bfseries} Maneuver & Style & Effect \\
+    	Riposte & Aldana & Counter-attack after successful defense \\
+    	Pommel Strike & Eisenfaust & Momentarily stun your opponent \\
+    	Feint & Valroux & Bypass opponent's defense with deception \\
+    	Lunge & Ambrogia & Strike from unexpected distance \\
+    	Tagging & Leegstra & Inflict minor wound to create opening \\
+    	Bind & Rogers & Lock opponent's blade to control distance
+    \end{NiceTable}
+    
+    
+    
+    \newpage
+\begin{SpecialNotes}[img/\gettheme/overlay]{Special Notes \\ Read Carefully}
+	\setlength{\baselineskip}{1.4\baselineskip}% Increase line spacing
+	Special notes are designed to draw attention for important information.
+	Always start them on top of column. Background image is optional.
+	Headers can be multilined, but don't overdo. For increased readability 
+	this example increase baselineskip, but nothing prevents You from formating it Your way. Don't put it on chapter pages as it will overflow badly.
+		\setlength{\baselineskip}{1\baselineskip}% restore line spacing
+			
+\end{SpecialNotes}
+    
+    \section{Citations}
+
+    \begin{Citation}[Captain Ernesto Castillo]{Never turn your back to the sea, for she is as fickle as fortune itself.}
+    \end{Citation}
+
+    \section{Advantages}
+    \hypertarget{a:innateadvantage}{\BGHeader{Innate Advantage (I)}}
+    This is your inherent advantage
+    
+    \hypertarget{a:knackadvantage}{\BGHeader{Knack Advantage (K)}}
+    Requires Hero Point to activate but no raises
+    
+    \newpage
+    \section{Backgrounds}
+    \BGHeader{Book Maker} 
+    \noindent You live to create beautiful books for others.
+    
+    \Quirk{Quirk}{Gain Hero Point each time You link mentioned text.}
+
+    
+    \begin{table}[h]
+        \centering
+        \renewcommand{\arraystretch}{1.2} % Adjust row height for better readability
+        \begin{tabular}{p{0.45\columnwidth} p{0.45\columnwidth}} % Adjust column width
+            \textbf{Advantages} & \textbf{Skills} \\
+            \hline
+            \hyperlink{a:innateadvantage}{Innate Advantage} & Empathy \\
+            \hyperlink{a:knackadvantage}{Knack Advantage} & Convince \\
+            & Notice \\
+            & Hide \\
+            \hline
+        \end{tabular}
+    \end{table}
+    
+
+
+	\section{Colored box}
+    \begin{ColorBox}{
+    	To distinguish some sections from surrounding content use ColorBox. Especially usefull for gameplay description or stories to be told.
+    }
+    \end{ColorBox}
+    
+    \section{Themes}
+    
+    \setTheme{pirateNations}
+    \BGHeader{pirateNations}
+
+    \setTheme{crescentEmpire}
+    \BGHeader{crescentEmpire}
+
+    \setTheme{1knations}
+    \BGHeader{1knations}
+
+    \setTheme{ifri}
+    \BGHeader{ifri}
+
+    \setTheme{newWorld}
+    \BGHeader{newWorld}
+
+    \setTheme{khitai}
+    \BGHeader{khitai}
+
+    \setTheme{priceOfArrogance}
+    \BGHeader{priceOfArrogance}
+
+    \setTheme{theah}
+    \BGHeader{theah}
+
+    \setTheme{citiesOfWonder}
+    \BGHeader{citiesOfWonder}
+    
+    \setTheme{theah}
+    % Restore original theme
+    %\setTheme{THEME}
+    
+        
+\end{document}
